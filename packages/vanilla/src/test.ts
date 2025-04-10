@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { INPUT_NAME, ID, INPUT_LABEL_ID } from "./const";
+import { INPUT_NAME, ID } from "./const";
 import Widget from "./widget";
 import { run } from "./widget";
 
@@ -15,23 +15,26 @@ const widgetLink = new URL(
 );
 
 beforeEach(() => {
+  const container = document.createElement("div");
+
   const label = document.createElement("label");
-  label.id = INPUT_LABEL_ID;
-  label.htmlFor = INPUT_NAME;
   label.dataset.mcaptcha_url = widgetLink.toString();
 
   const input = document.createElement("input");
-  input.id = INPUT_NAME;
+  input.classList.add(INPUT_NAME);
   label.appendChild(input);
-  document.body.appendChild(label);
 
-  const container = document.createElement("div");
-  container.id = ID;
+  container.appendChild(label);
+
+  const iframeContainer = document.createElement("div");
+  iframeContainer.classList.add(ID);
+  container.appendChild(iframeContainer);
+
   document.body.appendChild(container);
 });
 
+
 afterEach(() => {
-  console.log("removing div element");
   try {
     [
       document.querySelector("div"),
@@ -46,25 +49,34 @@ afterEach(() => {
 });
 
 it("Widget fails when mcaptcha__widget-container div is absent", () => {
-  document.getElementById(ID)?.remove();
-  try {
-    new Widget({ widgetLink: new URL(widgetLink) });
-  } catch (e) {
-    expect((<Error>e).message).toContain(ID);
-  }
+  document.querySelector(`.${ID}`)?.remove();
+
+  expect(() => {
+    new Widget(<HTMLInputElement>document.querySelector(`.${INPUT_NAME}`));
+  }).toThrow("Captcha's container element not found");
+});
+
+it("Widget throws if input is not inside a label with data-mcaptcha_url", () => {
+  const input = document.createElement("input");
+  input.classList.add(INPUT_NAME);
+  document.body.appendChild(input);
+
+  expect(() => new Widget(input)).toThrow("Could not find the mcaptcha_url data");
+
+  input.remove();
 });
 
 it("Widget works", () => {
-  const w = new Widget({ widgetLink: new URL(widgetLink) });
+  const input = <HTMLInputElement>document.querySelector(`.${INPUT_NAME}`);
+  const w = new Widget(input);
   const token = "token";
   w.setToken(token);
-  const input = <HTMLInputElement>document.getElementById(INPUT_NAME);
   expect(input.value).toBe(token);
 });
 
 it("message handler works", async () => {
-  const w = new Widget({ widgetLink: new URL(widgetLink) });
-  let input = <HTMLInputElement>document.getElementById(INPUT_NAME);
+  const input = <HTMLInputElement>document.querySelector(`.${INPUT_NAME}`);
+  const w = new Widget(input);
 
   const token = ["foo", "bar"];
   token.forEach((t) => {
@@ -96,22 +108,35 @@ it("Widget runner works", () => {
   run();
 });
 
-it("Widget runner doesn't work when label is absent", () => {
-  document.querySelector("label")?.remove();
-  try {
-    run();
-  } catch (e) {
-    expect((<Error>e).message).toContain(`Couldn't find "mcaptcha_url"`);
-  }
+it("Widget runner doesnt do anything when no", () => {
+  expect(() => run()).not.toThrow();
 
-  const label = document.createElement("label");
-  label.id = INPUT_LABEL_ID;
-  label.htmlFor = INPUT_NAME;
-  document.body.appendChild(label);
+  document.querySelector(`.${INPUT_NAME}`)?.remove();
+  expect(() => run()).toThrow("Could not find any mCaptcha to setup");
+});
 
-  try {
-    run();
-  } catch (e) {
-    expect((<Error>e).message).toContain(`Couldn't find "mcaptcha_url"`);
-  }
+it("Widget runner skips already initialized inputs", () => {
+  const input = <HTMLInputElement>document.querySelector(`.${INPUT_NAME}`);
+  input.setAttribute("data-setup", "true");
+
+  expect(() => run()).toThrow("Could not find any mCaptcha to setup");
+});
+
+it("Widget hides input and label properly", () => {
+  const input = <HTMLInputElement>document.querySelector(`.${INPUT_NAME}`);
+  const label = input.parentElement as HTMLElement;
+  new Widget(input);
+
+  expect(input.hidden).toBe(true);
+  expect(input.required).toBe(true);
+  expect(input.style.display).toBe("none");
+  expect(label.style.display).toBe("none");
+});
+
+it("Widget appends iframe to container", () => {
+  const input = <HTMLInputElement>document.querySelector(`.${INPUT_NAME}`);
+  new Widget(input);
+  const iframe = document.querySelector("iframe");
+  expect(iframe).toBeTruthy();
+  expect(iframe?.src).toBe(widgetLink.toString());
 });

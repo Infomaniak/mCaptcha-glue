@@ -12,23 +12,42 @@
 
 ## Usage
 
-Add this snippet to the form which requires to be protected using
-mCaptcha
+Add this snippet to the form which requires to be protected using mCaptcha
 
+#### Old way (still works)
 ```html
 <label
-  data-mcaptcha_url="{{paste your widget link here}}"
+  data-mcaptcha_url="{{captcha_url}}"
   for="mcaptcha__token"
   id="mcaptcha__token-label"
 >
-  mCaptcha authorization token.
-  <a
-	href="https://mcaptcha.org/docs/user-manual/how-to-mcaptcha-without-js/"
-	>Instructions</a
-  >.
+    mCaptcha authorization token.
+    <a
+            href="https://mcaptcha.org/docs/user-manual/how-to-mcaptcha-without-js/"
+    >Instructions</a
+    >.
   <input type="text" name="mcaptcha__token" id="mcaptcha__token" />
 </label>
 <div id="mcaptcha__widget-container"></div>
+<script src="https://unpkg.com/@mcaptcha/vanilla-glue@0.1.0-rc2/dist/index.js"/>
+```
+#### New way 🚀
+
+It is now possible to have multiple widgets on the same page.
+
+```html
+<label
+  data-mcaptcha_url="{{captcha_url}}"
+  class="mcaptcha__token-label"
+>
+    mCaptcha authorization token.
+    <a
+            href="https://mcaptcha.org/docs/user-manual/how-to-mcaptcha-without-js/"
+    >Instructions</a
+    >.
+  <input type="text" name="mcaptcha__token" class="mcaptcha__token" />
+</label>
+<div class="mcaptcha__widget-container"></div>
 <script src="https://unpkg.com/@mcaptcha/vanilla-glue@0.1.0-rc2/dist/index.js"/>
 ```
 

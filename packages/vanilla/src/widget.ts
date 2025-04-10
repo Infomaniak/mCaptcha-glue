@@ -14,7 +14,6 @@ class Widget {
 
   constructor(inputElement: HTMLInputElement) {
     const labelElement = inputElement?.parentElement;
-    console.log(labelElement);
 
     if (!labelElement || !labelElement.dataset.mcaptcha_url) {
       throw new Error("Could not find the mcaptcha_url data");

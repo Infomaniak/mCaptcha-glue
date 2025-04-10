@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import { INPUT_NAME, ID, INPUT_LABEL_ID } from "./const";
+import { INPUT_NAME, ID } from "./const";
 import Widget from "./widget";
 import { run } from "./widget";
 
@@ -56,6 +56,15 @@ it("Widget fails when mcaptcha__widget-container div is absent", () => {
   }).toThrow("Captcha's container element not found");
 });
 
+it("Widget throws if input is not inside a label with data-mcaptcha_url", () => {
+  const input = document.createElement("input");
+  input.classList.add(INPUT_NAME);
+  document.body.appendChild(input);
+
+  expect(() => new Widget(input)).toThrow("Could not find the mcaptcha_url data");
+
+  input.remove();
+});
 
 it("Widget works", () => {
   const input = <HTMLInputElement>document.querySelector(`.${INPUT_NAME}`);
@@ -104,4 +113,30 @@ it("Widget runner doesnt do anything when no", () => {
 
   document.querySelector(`.${INPUT_NAME}`)?.remove();
   expect(() => run()).toThrow("Could not find any mCaptcha to setup");
+});
+
+it("Widget runner skips already initialized inputs", () => {
+  const input = <HTMLInputElement>document.querySelector(`.${INPUT_NAME}`);
+  input.setAttribute("data-setup", "true");
+
+  expect(() => run()).toThrow("Could not find any mCaptcha to setup");
+});
+
+it("Widget hides input and label properly", () => {
+  const input = <HTMLInputElement>document.querySelector(`.${INPUT_NAME}`);
+  const label = input.parentElement as HTMLElement;
+  new Widget(input);
+
+  expect(input.hidden).toBe(true);
+  expect(input.required).toBe(true);
+  expect(input.style.display).toBe("none");
+  expect(label.style.display).toBe("none");
+});
+
+it("Widget appends iframe to container", () => {
+  const input = <HTMLInputElement>document.querySelector(`.${INPUT_NAME}`);
+  new Widget(input);
+  const iframe = document.querySelector("iframe");
+  expect(iframe).toBeTruthy();
+  expect(iframe?.src).toBe(widgetLink.toString());
 });

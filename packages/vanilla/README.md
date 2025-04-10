@@ -32,6 +32,27 @@ mCaptcha
 <script src="https://unpkg.com/@mcaptcha/vanilla-glue@0.1.0-rc2/dist/index.js"/>
 ```
 
+### Multiple widgets on the same page
+
+It is possible to have multiple widgets on the same page; simply add a suffix to differentiate each widget.
+
+```html
+<label
+  data-mcaptcha_url="{{paste your widget link here}}"
+  for="mcaptcha__token"
+  id="mcaptcha__token{{suffix}}-label"
+>
+  mCaptcha authorization token.
+  <a
+        href="https://mcaptcha.org/docs/user-manual/how-to-mcaptcha-without-js/"
+	>Instructions</a
+  >.
+  <input type="text" name="mcaptcha__token" id="mcaptcha__token{{suffix}}" />
+</label>
+<div id="mcaptcha__widget{{suffix}}-container"></div>
+<script src="https://unpkg.com/@mcaptcha/vanilla-glue@0.1.0-rc2/dist/index.js"/>
+```
+
 ## Example
 
 See example form in [./static/embeded.html](./static/embeded.html)
